@@ -1,0 +1,19 @@
+#!/bin/bash
+set -euo pipefail; IFS=$'\n\t'
+
+# https://wiki.strongswan.org/projects/strongswan/wiki/ForwardingAndSplitTunneling
+# https://wiki.strongswan.org/projects/strongswan/wiki/VirtualIP
+iptables -t nat -A POSTROUTING -s 10.8.0.0/16 -o eth0 -m policy --dir out --pol ipsec -j ACCEPT
+iptables -t nat -A POSTROUTING -s 10.8.0.0/16 -o eth0 -j MASQUERADE
+
+# Hotfix for OpenSSL error: unable to write 'random state'
+SHARED_SECRET="123$(openssl rand -base64 32 2>/dev/null)"
+if ! [ -f /etc/ipsec.secrets ]; then
+  printf ': PSK "%s"\n' "${SHARED_SECRET}" > /etc/ipsec.secrets
+fi
+
+# https://github.com/gaomd/docker-ikev2-vpn-server/issues/7
+rm -f /var/run/starter.charon.pid
+
+# http://wiki.loopop.net/doku.php?id=server:vpn:strongswanonopenvz
+/usr/sbin/ipsec start --nofork

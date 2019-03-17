@@ -1,28 +1,26 @@
-# IKEv2 VPN Server on Docker
+IKEv2 Server
+========
 
-Recipe to build [`nebukad/ikev2-vpn-alpine`](https://registry.hub.docker.com/u/nebukad/ikev2-vpn-alpine/) Docker image. Fork from [`gaomd/ikev2-vpn-server`](https://hub.docker.com/r/gaomd/ikev2-vpn-server/)
+```bash
+docker run \
+  --cap-add=NET_ADMIN \
+  -p 500:500/udp \
+  -p 4500:4500/udp \
+  -e "HOST=<SERVER_IP>OR<FQDN>" \
+  -e "HOSTNAME=<SERVER_NAME> \
+  simnalamburt/ikev2-server
+```
 
 ## Usage
 
 ### 1. Start the IKEv2 VPN Server
 
-    docker run --cap-add=NET_ADMIN -d --name vpn-server --restart=always -p 500:500/udp -p 4500:4500/udp -e "HOST=<SERVER_IP>OR<FQDN>" -e "HOSTNAME=<SERVER_NAME> nebukad/ikev2-vpn-server
-----------
-    * Tags :
-    Stable : old image based on alpine 3.6
-    Latest : rebased on alpine 3.7
 
 ### 2. Generate the .mobileconfig (for iOS / macOS) to the current path
 
     docker exec -it vpn-server generate-mobileconfig > ikev2-vpn.mobileconfig
 
 Transfer the generated `ikev2-vpn.mobileconfig` file to your local computer via SSH tunnel (`scp`) or any other secure methods.
-
-### 3. Install the .mobileconfig (for iOS / macOS)
-
-- **iOS 9 or later**: AirDrop the `.mobileconfig` file to your iOS 9 device, finish the **Install Profile** screen;
-
-- **macOS 10.11 El Capitan or later**: Double click the `.mobileconfig` file to start the *profile installation* wizard.
 
 ## Technical Details
 
